@@ -120,7 +120,7 @@ export const galleryItems = [
     caption: { ms: "Rak pengering karpet di kedai kami", en: "Carpet drying racks at our shop" } },
   { id: "karpet-menunggu", type: "photo", src: "/gallery/karpet-menunggu-dicuci.jpg", width: 1050, height: 1400, service: "carpet",
     caption: { ms: "Karpet pelanggan menunggu giliran untuk dicuci", en: "Customers' carpets waiting to be washed" } },
-  { id: "karpet-video-3", type: "video", src: "/gallery/cucian-karpet-3.mp4", poster: "/gallery/cucian-karpet-3.jpg", thumbAt: 3, width: 576, height: 1024, service: "carpet",
+  { id: "karpet-video-3", type: "video", src: "/gallery/cucian-karpet-3.mp4", poster: "/gallery/cucian-karpet-3.jpg", thumbAt: 1, width: 576, height: 1024, service: "carpet",
     caption: { ms: "Kedai kami, Dobi Karpet Xpress — penuh dengan karpet pelanggan", en: "Our shop, Dobi Karpet Xpress — full of customers' carpets" } },
   { id: "karpet-dalam-kedai", type: "photo", src: "/gallery/karpet-dalam-kedai.jpg", width: 828, height: 1104, service: "carpet",
     caption: { ms: "Karpet siap dibalut, sedia untuk dihantar", en: "Wrapped carpets, ready for delivery" } },];
