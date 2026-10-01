@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens (ui-ux-pro-max: clean service, water palette) ---------- */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Signature black & white. The "ocean" scale is the brand neutral ramp
+     (kept as a name so components didn't need renaming). */
+  --color-ink: #0a0a0a;          /* foreground */
+  --color-ink-soft: #525252;     /* muted foreground — 7.8:1 on white */
+  --color-mist: #fafafa;         /* page background */
+  --color-foam: #f2f2f2;         /* muted surface */
+  --color-line: #e5e5e5;         /* borders */
+
+  --color-ocean-950: #000000;
+  --color-ocean-900: #0a0a0a;
+  --color-ocean-800: #171717;
+  --color-ocean-700: #262626;
+  --color-ocean-600: #0a0a0a;    /* primary — on white 19.8:1 */
+  --color-ocean-500: #404040;
+  --color-ocean-400: #a3a3a3;
+  --color-ocean-300: #d4d4d4;
+  --color-ocean-100: #f0f0f0;
+
+  /* Signature yellow. Use as a fill (with ink text) or on black — never as
+     text on white (fails contrast). For yellow-toned text on white use brand-ink. */
+  --color-brand: #facc15;        /* ink text on top — 12.9:1 */
+  --color-brand-hover: #eab308;
+  --color-brand-ink: #854d0e;    /* gold text on white — 7.4:1 */
+
+  --color-aqua: #facc15;         /* highlight accents (dots, lines, sparkles) */
+  --color-sun: #facc15;          /* star rating */
+  --color-cta: #facc15;          /* primary action — ink text */
+  --color-cta-hover: #eab308;
+  --color-whatsapp: #25d366;     /* WhatsApp icon + floating button only */
+  --color-whatsapp-dark: #1da851;
+  --color-danger: #b91c1c;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -8px rgb(0 0 0 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.05), 0 20px 48px -16px rgb(0 0 0 / 0.28);
+
+  --animate-marquee: marquee var(--marquee-duration, 40s) linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-rise: rise 14s linear infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 0.7; }
+    100% { transform: translateY(-110vh) scale(1.3); opacity: 0; }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-mist font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+  :focus-visible {
+    /* mid-grey: ≥4.4:1 against both black and white sections */
+    outline: 3px solid #737373;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  button, a, select, summary, [role="button"] { cursor: pointer; }
+  ::selection { background: var(--color-brand); color: var(--color-ink); }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-sm font-bold tracking-wide text-ocean-600 uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply h-0.5 w-6 rounded-full bg-gradient-to-r from-ocean-500 to-aqua;
+  }
+  .section-title {
+    @apply mt-3 text-3xl leading-tight font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl;
+  }
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition-[background-color,color,box-shadow,transform] duration-200 ease-out active:scale-[0.97] disabled:opacity-60;
+  }
+  /* Variants — always combine with .btn, e.g. className="btn btn-cta" */
+  /* Yellow primary button — works on both black and white sections */
+  .btn-cta { @apply bg-cta text-ink shadow-lg shadow-yellow-500/25 hover:bg-cta-hover; }
+  /* Black button; pair with a green <WhatsAppIcon className="text-whatsapp" /> */
+  .btn-whatsapp { @apply bg-ink text-white shadow-lg shadow-black/20 hover:bg-neutral-800; }
+  /* White button for dark (black) sections */
+  .btn-invert { @apply bg-white text-ink shadow-lg shadow-black/30 hover:bg-foam; }
+  .btn-ghost-light { @apply border border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white/20; }
+  .btn-outline { @apply border border-line bg-white text-ink hover:border-ocean-400 hover:bg-foam; }
+
+  /* Scroll-reveal (see Reveal.jsx). Content is visible without JS. */
+  .reveal-ready .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-ready .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+  .grain {
+    background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+/* Hero before/after sweep — the dirty layer is clipped to the left of --sweep */
+@property --sweep {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+.hero-split {
+  animation: sweep 6s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
+}
+.hero-dirty {
+  clip-path: inset(0 calc(100% - var(--sweep)) 0 0);
+}
+.hero-sweep {
+  left: var(--sweep);
+  transform: translateX(-50%);
+}
+@keyframes sweep {
+  from { --sweep: 80%; }
+  to { --sweep: 20%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-ready .reveal { opacity: 1; transform: none; }
+}
