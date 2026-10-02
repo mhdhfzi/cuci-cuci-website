@@ -18,7 +18,7 @@ export const business = {
   legalName: "Rizqiman Gemilang Legacy",
   registrationNo: "201903262495 (NS0229212-P)",
   founded: "2019-09-26",
-  customersPerYear: 1400,
+  customersPerYear: 1800,
   turnaroundDays: "5–7",
   address: {
     street: "89-G, Jalan Bandar Senawang 5, Taipan 2, Pusat Bandar Senawang",

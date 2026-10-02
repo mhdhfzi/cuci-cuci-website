@@ -139,7 +139,7 @@ export default function Hero() {
             {t("hero.badge")}
           </p>
 
-          <h1 className="mt-6 text-[2.6rem] leading-[1.05] font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <h1 className="mt-6 text-[2.6rem] leading-[1.05] font-extrabold tracking-tight text-white sm:text-6xl lg:text-[4.1rem]">
             {t("hero.title1")}
             <span className="block text-brand">
               {t("hero.title2")}

@@ -92,7 +92,8 @@ function Skeleton() {
 // with reduced motion it becomes a plain horizontally-scrollable row.
 function ReviewMarquee({ reviews }) {
   const { t } = useLang();
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(false); // the Hentikan / Teruskan button
+  const [hold, setHold] = useState(false); // pointer over / keyboard focus inside the cards
   const loop = reviews.length >= 3;
   const items = loop ? [...reviews, ...reviews] : reviews;
 
@@ -110,10 +111,14 @@ function ReviewMarquee({ reviews }) {
     <div className="relative">
       <div className="mask-fade-x overflow-hidden motion-reduce:overflow-x-auto motion-reduce:[mask-image:none]">
         <div
-          className={`flex w-max py-2 motion-safe:animate-marquee hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] ${
-            paused ? "[animation-play-state:paused]" : ""
-          }`}
-          style={{ "--marquee-duration": `${reviews.length * 12}s` }}
+          className="flex w-max py-2 motion-safe:animate-marquee"
+          // play-state must be inline: the animate-marquee shorthand would
+          // otherwise reset it to "running" and the pause would never apply
+          style={{ "--marquee-duration": `${reviews.length * 12}s`, animationPlayState: paused || hold ? "paused" : "running" }}
+          onMouseEnter={() => setHold(true)}
+          onMouseLeave={() => setHold(false)}
+          onFocus={() => setHold(true)}
+          onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHold(false)}
         >
           {items.map((r, i) => (
             <div key={i} className="flex pr-5" aria-hidden={i >= reviews.length ? "true" : undefined} inert={i >= reviews.length ? true : undefined}>
@@ -126,6 +131,7 @@ function ReviewMarquee({ reviews }) {
         <button
           type="button"
           onClick={() => setPaused((p) => !p)}
+          aria-pressed={paused}
           className="inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink-soft hover:bg-white hover:text-ink"
         >
           {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}

@@ -15,6 +15,10 @@ const FOUNDED_YEAR = Number(business.founded.slice(0, 4));
 const DOCS = {
   ssm: { src: "/images/about/sijil-ssm.jpg", width: 590, height: 867 },
   award: { src: "/images/about/anugerah-karcher-2024.jpg", width: 535, height: 839 },
+  sertu: { src: "/images/about/sijil-sertu.jpg", width: 810, height: 1120 },
+  course: { src: "/images/about/sijil-kursus-cucian-karpet.jpg", width: 810, height: 1120 },
+  tax: { src: "/images/about/sijil-pematuhan-cukai.jpg", width: 810, height: 1120 },
+  karcherCourse: { src: "/images/about/sijil-kursus-karcher.jpg", width: 810, height: 1120 },
 };
 
 function Stat({ value, label, suffix = "" }) {
@@ -186,8 +190,8 @@ export default function About() {
           <h3 className="flex items-center gap-2 text-sm font-bold tracking-wide text-ink-soft uppercase">
             <BadgeCheck className="size-4 text-ink" aria-hidden="true" /> {t("about.credTitle")}
           </h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {["ssm", "award"].map((k) => (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Object.keys(DOCS).map((k) => (
               <button
                 key={k}
                 type="button"

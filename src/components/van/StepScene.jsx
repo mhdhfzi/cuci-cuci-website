@@ -204,24 +204,89 @@ function House({ position, rotation = 0 }) {
   );
 }
 
+// A simple low-poly worker in the Cuci-Cuci black & yellow shirt. Faces +z.
+// `parts` receives refs for the swinging limbs and the carried roll.
+function Worker({ parts, rollMats }) {
+  const m = useMemo(
+    () => ({
+      shirt: new THREE.MeshStandardMaterial({ color: "#facc15", roughness: 0.6 }),
+      pants: new THREE.MeshStandardMaterial({ color: "#111111", roughness: 0.8 }),
+      skin: new THREE.MeshStandardMaterial({ color: "#c68b59", roughness: 0.7 }),
+      cap: new THREE.MeshStandardMaterial({ color: "#0a0a0a", roughness: 0.6 }),
+    }),
+    [],
+  );
+  const set = (k) => (el) => (parts.current[k] = el);
+  return (
+    <group>
+      {/* legs pivot at the hip */}
+      {[0.08, -0.08].map((x, i) => (
+        <group key={x} ref={set(i ? "legR" : "legL")} position={[x, 0.46, 0]}>
+          <mesh position={[0, -0.22, 0]} material={m.pants}>
+            <capsuleGeometry args={[0.06, 0.32, 4, 8]} />
+          </mesh>
+          <mesh position={[0, -0.44, 0.04]} material={m.cap}>
+            <boxGeometry args={[0.1, 0.05, 0.16]} />
+          </mesh>
+        </group>
+      ))}
+      {/* torso: yellow shirt with a black band */}
+      <mesh position={[0, 0.66, 0]} material={m.shirt}>
+        <boxGeometry args={[0.34, 0.38, 0.2]} />
+      </mesh>
+      <mesh position={[0, 0.6, 0.101]} material={m.cap}>
+        <planeGeometry args={[0.34, 0.06]} />
+      </mesh>
+      {/* head + cap */}
+      <mesh position={[0, 0.96, 0]} material={m.skin}>
+        <sphereGeometry args={[0.12, 16, 12]} />
+      </mesh>
+      <mesh position={[0, 1.04, 0]} material={m.cap}>
+        <sphereGeometry args={[0.125, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+      </mesh>
+      <mesh position={[0, 1.04, 0.1]} material={m.cap}>
+        <boxGeometry args={[0.16, 0.02, 0.12]} />
+      </mesh>
+      {/* left arm swings; right arm reaches up to steady the roll */}
+      <group ref={set("armL")} position={[0.21, 0.82, 0]}>
+        <mesh position={[0, -0.17, 0]} material={m.shirt}>
+          <capsuleGeometry args={[0.045, 0.26, 4, 8]} />
+        </mesh>
+      </group>
+      <group ref={set("armR")} position={[-0.21, 0.82, 0]} rotation={[0, 0, -2.6]}>
+        <mesh position={[0, -0.15, 0]} material={m.shirt}>
+          <capsuleGeometry args={[0.045, 0.22, 4, 8]} />
+        </mesh>
+      </group>
+      {/* rolled carpet on the right shoulder, lying front-to-back */}
+      <mesh ref={set("roll")} position={[-0.3, 0.98, 0.05]} rotation={[Math.PI / 2, 0, 0]} material={rollMats}>
+        <cylinderGeometry args={[0.16, 0.16, 1.1, 18]} />
+      </mesh>
+    </group>
+  );
+}
+
+// Loop: worker carries a carpet from the house to the van's open back,
+// slides it in, then walks back for the next one.
+const LOOP = 6.2;
 function PickupScene() {
   const wheels = useRef([]);
   const doors = useRef([]);
   const light = useRef(null);
-  const roll = useRef(null);
+  const worker = useRef(null);
+  const parts = useRef({});
   const rollMats = useMemo(() => {
     const p = CARPET_PALETTES[0];
     const end = new THREE.MeshStandardMaterial({ map: carpetEndTexture(p) });
     return [new THREE.MeshStandardMaterial({ map: carpetSideTexture(p), roughness: 0.95 }), end, end];
   }, []);
-  // path from the house door to the van's open back
+  // path from the house door to just behind the van's open back
   const path = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-1.9, 0.18, 0.2),
-        new THREE.Vector3(-1.0, 0.22, 1.1),
-        new THREE.Vector3(0.2, 0.4, 1.6),
-        new THREE.Vector3(1.05, 0.62, 1.35),
+        new THREE.Vector3(-1.45, 0, 0.2),
+        new THREE.Vector3(-0.4, 0, 1.25),
+        new THREE.Vector3(0.62, 0, 1.95),
       ]),
     [],
   );
@@ -229,14 +294,51 @@ function PickupScene() {
     if (doors.current[0]) doors.current[0].rotation.y = 4.6;
     if (doors.current[1]) doors.current[1].rotation.y = -1.85;
     if (light.current) light.current.intensity = 5;
-    const t = clock.elapsedTime % 3.4;
-    const r = roll.current;
-    if (!r) return;
-    const appear = ease(t / 0.4);
-    const move = ease((t - 0.4) / 1.9);
-    const gone = ease((t - 2.3) / 0.5);
-    r.position.copy(path.getPointAt(move));
-    r.scale.setScalar(Math.max(appear * (1 - gone), 0.001));
+    const w = worker.current;
+    const p = parts.current;
+    if (!w) return;
+    const t = clock.elapsedTime % LOOP;
+
+    // 0–2.6 walk to van carrying · 2.6–3.4 load · 3.4–5.8 walk back · rest
+    let u;
+    let walking = true;
+    let carrying = true;
+    let load = 0;
+    if (t < 2.6) u = ease(t / 2.6);
+    else if (t < 3.4) {
+      u = 1;
+      walking = false;
+      load = ease((t - 2.6) / 0.8);
+    } else if (t < 5.8) {
+      u = 1 - ease((t - 3.4) / 2.4);
+      carrying = false;
+    } else {
+      u = 0;
+      walking = false;
+      carrying = false;
+    }
+
+    const pos = path.getPointAt(u);
+    const ahead = path.getTangentAt(Math.min(Math.max(u, 0.001), 0.999));
+    const back = t >= 3.4 && t < 5.8;
+    w.position.set(pos.x, Math.abs(Math.sin(t * 9)) * (walking ? 0.03 : 0), pos.z);
+    w.rotation.y = Math.atan2(back ? -ahead.x : ahead.x, back ? -ahead.z : ahead.z);
+
+    // limbs
+    const swing = walking ? Math.sin(t * 9) * 0.6 : 0;
+    if (p.legL) p.legL.rotation.x = swing;
+    if (p.legR) p.legR.rotation.x = -swing;
+    if (p.armL) p.armL.rotation.x = -swing * 0.8;
+    if (p.armR) p.armR.rotation.z = carrying ? -2.6 : 0;
+    if (p.armR) p.armR.rotation.x = carrying ? 0 : swing * 0.8;
+
+    // the roll rides on the shoulder, then slides forward into the van
+    if (p.roll) {
+      p.roll.visible = carrying;
+      p.roll.position.z = 0.05 + load * 0.75;
+      p.roll.position.y = 0.98 - load * 0.12;
+      p.roll.scale.setScalar(Math.max(1 - load * 0.35, 0.001));
+    }
   });
   return (
     <group rotation={[0, -0.25, 0]}>
@@ -267,14 +369,15 @@ function PickupScene() {
       <group position={[2.1, 0, 0.6]} rotation={[0, 0.75, 0]} scale={0.56}>
         <VanModel spinRef={wheels} doorsRef={doors} lightRef={light} />
       </group>
-      {/* carpet roll being carried in */}
-      <mesh ref={roll} rotation={[Math.PI / 2, 0, 0]} material={rollMats}>
-        <cylinderGeometry args={[0.17, 0.17, 1.2, 20]} />
-      </mesh>
+      {/* worker carrying the carpet */}
+      <group ref={worker}>
+        <group scale={1.45}>
+          <Worker parts={parts} rollMats={rollMats} />
+        </group>
+      </group>
     </group>
   );
 }
-
 // ── Step 3: clean carpet unrolling + sparkles ──────────────────────────────
 
 const RUG_L = 5.4;
