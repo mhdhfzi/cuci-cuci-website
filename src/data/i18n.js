@@ -286,8 +286,6 @@ export const translations = {
     },
     floating: {
       label: "WhatsApp kami",
-      bubble: "Ada soalan? WhatsApp kami — kami balas dengan cepat.",
-      dismiss: "Tutup mesej",
     },
   },
 
@@ -577,8 +575,6 @@ export const translations = {
     },
     floating: {
       label: "WhatsApp us",
-      bubble: "Got a question? WhatsApp us — we reply fast.",
-      dismiss: "Dismiss message",
     },
   },
 };

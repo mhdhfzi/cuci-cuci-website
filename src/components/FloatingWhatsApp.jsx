@@ -1,44 +1,21 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
 import { useLang } from "../i18n";
 import { whatsAppLink } from "../utils/whatsapp";
 import { WhatsAppIcon } from "./icons";
 
-const DISMISS_KEY = "cuci-bubble-dismissed";
-
-function wasDismissed() {
-  try {
-    return sessionStorage.getItem(DISMISS_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
+// The AI chat button ("Tanya kami", from widget.js in index.html) sits just above this
+// button and invites questions, so there's no separate nudge bubble here.
 export default function FloatingWhatsApp() {
   const { t } = useLang();
   const [visible, setVisible] = useState(false);
-  const [bubble, setBubble] = useState(false);
 
-  // Appear after the visitor scrolls past the hero; show a one-time nudge.
+  // Appear after the visitor scrolls past the hero.
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.6);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    const timer = wasDismissed() ? null : setTimeout(() => setBubble(true), 9000);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      clearTimeout(timer);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const dismiss = () => {
-    setBubble(false);
-    try {
-      sessionStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      /* storage unavailable */
-    }
-  };
 
   return (
     <div
@@ -47,19 +24,6 @@ export default function FloatingWhatsApp() {
       }`}
       style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
-      {bubble && visible && (
-        <div className="relative max-w-60 rounded-2xl rounded-br-sm bg-white p-4 pr-10 text-sm font-medium text-ink shadow-lift ring-1 ring-line">
-          {t("floating.bubble")}
-          <button
-            type="button"
-            onClick={dismiss}
-            aria-label={t("floating.dismiss")}
-            className="absolute top-1 right-1 grid size-9 place-items-center rounded-full text-ink-soft hover:bg-foam hover:text-ink"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
       <a
         href={whatsAppLink(t("cta.quick"))}
         target="_blank"
