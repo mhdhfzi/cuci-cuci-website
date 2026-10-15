@@ -4,7 +4,7 @@
 
 A bilingual (Bahasa Melayu / English) marketing website for **Cuci-Cuci Senawang (Dobi Karpet Xpress)**, a carpet, mattress, sofa and car-seat cleaning business in Senawang, Negeri Sembilan, operated by Rizqiman Gemilang Legacy since 2019.
 
-The site introduces the business and builds trust with customers through interactive 3D scenes, a gallery of real work, live Google reviews and verified certificates. Customers can send an enquiry straight to the business WhatsApp in one tap.
+The site introduces the business and builds trust with customers through interactive 3D scenes, a gallery of real work, live Google reviews and verified certificates. Customers can send an enquiry straight to the business WhatsApp in one tap, or ask the AI chat assistant about services and prices any time of day.
 
 ---
 
@@ -14,6 +14,7 @@ The site introduces the business and builds trust with customers through interac
 - **More 3D across the page.** A free-pickup radius map plotted from real coordinates, animated "how it works" scenes, a gold award trophy, and an equipment turntable that visitors control by tapping any of 11 machine names.
 - **Live Google reviews.** A serverless function proxies the Google Places API (New), so the API key never reaches the browser. Cost is kept at zero with a 12-hour CDN cache, a 30-requests-a-day quota cap, request validation and a budget alert.
 - **WhatsApp enquiry flow.** A validated form (React Hook Form + Zod, including Malaysian phone numbers) builds a pre-filled WhatsApp message, with a live chat-bubble preview as the customer types.
+- **AI chat assistant.** The **Tanya kami** button opens an assistant that answers questions about services, prices, hours and pickup in BM or English, and gives price estimates from the real price list. It never takes bookings or invents prices: bookings, site-visit quotes and anything it can't answer go to the business WhatsApp. It hides itself if it can't answer (for example when its AI credit runs out), and the owner reads every chat and the questions it couldn't answer in a private dashboard. Built as a separate project, [carpet-ai-assistant](https://github.com/mhdhfzi/carpet-ai-assistant), and embedded with one script tag.
 - **Gallery of real work.** 44 photos and videos grouped by service, with a full-screen viewer (keyboard and swipe) and service filters linked from each service card.
 - **Bilingual.** Every string is available in BM and English through a small translation layer, and the choice is remembered per browser.
 - **Trust content.** Company story, timeline, vision and mission, an award, and six certificates (SSM, LHDN tax compliance, Sertu, training courses) shown as tappable documents, with personal ID numbers redacted.
@@ -36,6 +37,7 @@ The site introduces the business and builds trust with customers through interac
 | Forms | React Hook Form, Zod |
 | Icons | Lucide React + custom SVG |
 | Backend | Vercel Serverless Function (Node) → Google Places API (New) |
+| AI chat | Embedded widget from [carpet-ai-assistant](https://github.com/mhdhfzi/carpet-ai-assistant): FastAPI, Claude (tool calling), RAG on PostgreSQL + pgvector, hosted on Google Cloud Run |
 | Hosting | Vercel (CDN, HTTPS, custom domain, CI/CD from GitHub) |
 | Media tooling | ffmpeg (H.264 compression, posters, redaction), PowerShell scripts |
 | Quality | ESLint (React Hooks rules), production builds checked on every change |
@@ -50,6 +52,9 @@ Browser ──► Vercel CDN ──► static React app (Vite build)
 
 Enquiry form ──► wa.me link with a pre-filled message ──► business WhatsApp
                  (no customer data stored on the website)
+
+Tanya kami ──► widget.js ──► AI assistant API (Google Cloud Run, separate project)
+               (answers + estimates; bookings go to WhatsApp; only this domain may call it)
 ```
 
 ## Project structure
@@ -76,6 +81,8 @@ src/van3d.js                Decides 3D vs 2D (reduced motion, data saver, WebGL)
 | Gallery photos and videos | `src/data/gallery.js` |
 | All text (BM + EN) | `src/data/i18n.js` |
 | SEO meta and structured data | `index.html` |
+| AI chat button (script tag and its settings) | `index.html` |
+| What the AI assistant knows (services, hours, policies) | `backend/knowledge-cucicuci/` in [carpet-ai-assistant](https://github.com/mhdhfzi/carpet-ai-assistant) |
 
 ### Adding photos and videos to the gallery
 
